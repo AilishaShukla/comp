@@ -1,0 +1,16 @@
+# 05 · Decision log
+
+Add a row whenever a decision changes the architecture, tests or metrics. Never delete rows. If a decision is reversed, mark it superseded and add a new row.
+
+| # | Decision | Why | Alternatives considered | Status |
+|---|---|---|---|---|
+| D1 | Model is **ESPCN ×2** | 3 plain conv layers + pixel shuffle; fits HLS; all compute at low resolution | FSRCNN-s (needs a transposed-conv engine), QuickSRNet | Accepted |
+| D2 | **Y channel only**; chroma upscaled by bicubic | Standard practice in SR papers; 1 input channel | Full RGB (3× L1 work, little gain) | Accepted |
+| D3 | **ReLU** instead of tanh | Folds into the INT8 clamp; no lookup table | tanh LUT | Accepted (record it as a model change) |
+| D4 | **INT8** weights and activations, INT32 accumulators | DSP-friendly; matches the brief | INT4 (more quality risk), FP (too costly) | Accepted |
+| D5 | Accelerate **L2** first | 87 % of MACs | All layers at once (more risk) | Accepted; S1/S2 are stretch |
+| D6 | **HWC** layout | Cin = 64 × 8 bit = exactly one 512-bit word per pixel | CHW (strided reads across channels) | Accepted |
+| D7 | Shared `quant.h` for golden model and kernel | Removes rounding drift as a source of mismatches | Re-implementing it in each | Accepted |
+| D8 | Bit-exact comparison is the correctness gate; PSNR is only a quality metric | PSNR can hide index bugs | Tolerance-based comparison | Accepted |
+| D9 | Report T_kernel without host↔device transfers; report transfers separately | Matches the course convention; transfers are counted in the app metric | A single combined time | Accepted |
+| D10 | Starting PE array To=32 × Ti=16 (512 MAC/cycle), grown from 128 | ~52 ms per frame predicted; well under the DSP budget | 1,024 MAC/cycle (timing risk) | Tentative; revisit after E1 |

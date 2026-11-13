@@ -1,0 +1,50 @@
+# --- Local-only files (never published) ---
+CLAUDE.md
+.claude/
+docs/course/
+*.pdf
+!reports/*.pdf
+
+# --- OS / editor ---
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+*.pt
+*.pth
+data/
+
+# --- Generated test vectors and local builds ---
+test/vectors/
+test/build/
+golden/build/
+*.o
+*.out
+host.exe
+
+# --- Vitis / Vivado build outputs ---
+_x*/
+build_dir*/
+.Xil/
+.ipcache/
+*.xo
+*.xclbin
+*.ltx
+*.info
+*.link_summary
+*.compile_summary
+*.log
+*.jou
+*.wdb
+*.wcfg
+emconfig.json
+xrt.run_summary
+!results/**/*.xclbin
+!results/**/*.log
