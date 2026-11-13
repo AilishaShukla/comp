@@ -13,10 +13,10 @@ Refs: ESPCN [R1], integer-only quantization [R10], gemmlowp fixed-point requanti
 | Network | ESPCN ×2: conv5×5(1→64) → ReLU → conv3×3(64→32) → ReLU → conv3×3(32→4) → PixelShuffle(2) | ReLU replaces tanh (D3 in [05-decisions.md](05-decisions.md)) |
 | Padding | Zero, "same" (pad 2 for 5×5, pad 1 for 3×3) | Must match `quant.h` |
 | Input | Y channel of YCbCr (BT.601), scaled to [0, 1] in FP32 | Chroma uses bicubic ×2 |
-| Train data | T91 [R14] for a first run; DIV2K train (800 imgs) [R13] for the final model | Random 17×17 LR patches, LR made with bicubic ↓2 |
+| Train data | DIV2K train (800 imgs) [R13] (D11) | Random 32×32 LR patches (D12), LR made with bicubic ↓2 |
 | Eval data | Set5 [R15], Set14 [R16]; PSNR/SSIM on Y, crop 2 px border | [03-metrics.md](03-metrics.md) §6 |
 | Starting code | An existing PyTorch ESPCN [O1/O2], changed to ReLU and Y-only | Faster than writing from scratch (risk trigger in 04-plan) |
-| Optimizer | Adam, lr 1e-3 → 1e-4, L1 or MSE loss, about 100–200 epochs on T91 | Not critical. Record what was used |
+| Optimizer | Adam, lr 1e-3 → 1e-4 at 80 %, L1 loss, batch 64, 100k iterations (D12) | `model/train.py` defaults |
 
 **Gate T0:** FP32 Set5 PSNR is above bicubic. Then INT8 PSNR is within 0.3 dB of FP32.
 

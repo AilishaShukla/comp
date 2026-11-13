@@ -2,7 +2,7 @@
 
 An HLS hardware accelerator for **ESPCN ×2 image super-resolution**, built on the AMD/Xilinx VCK5000 (Versal VC1902) with Vitis HLS 2022.2 and XRT. The FPGA kernel computes the network's dominant 3×3 convolution (64→32 channels, **87 % of all MACs**) in INT8. Its output matches a quantized software reference **bit for bit**, and every speedup is measured on the real board.
 
-> **Status:** design and test specification complete; implementation in progress. See the [roadmap](#roadmap). All performance figures below are **design targets**. They will be replaced by measured on-board numbers as each version lands.
+> **Status:** specification, bit-exact golden model (T1) and CPU profiling done; model training and kernel versions in progress. See the [roadmap](#roadmap). FPGA performance figures are **design targets** until each version is measured on the board.
 
 ---
 
@@ -21,11 +21,13 @@ flowchart LR
     style L2 fill:#fde68a,stroke:#b45309
 ```
 
-| Layer | MACs / frame (540²) | Share |
-|---|---:|---:|
-| L1 5×5, 1→64 | 0.47 G | 7.6 % |
-| **L2 3×3, 64→32** | **5.37 G** | **87.0 %** |
-| L3 3×3, 32→4 | 0.34 G | 5.4 % |
+| Layer | MACs / frame (540²) | MAC share | Measured CPU time | CPU share |
+|---|---:|---:|---:|---:|
+| L1 5×5, 1→64 | 0.47 G | 7.6 % | 0.087 s | 10.1 % |
+| **L2 3×3, 64→32** | **5.37 G** | **87.0 %** | **0.694 s** | **81.1 %** |
+| L3 3×3, 32→4 | 0.34 G | 5.4 % | 0.075 s | 8.8 % |
+
+CPU times are measured on an Apple M2 (single thread, `-O2`, best of two loop orders per layer, bit-exact with the golden model; [results/profile/cpu_m2.txt](results/profile/cpu_m2.txt)). Accelerating L2 alone caps the application speedup at about 5.3× (Amdahl), which motivates the stretch goal of moving L1 and L3 onto the same engine.
 
 ## Kernel design
 
@@ -69,6 +71,17 @@ Correctness is checked in levels. Each level must pass before a 30-minute bitstr
 | T5 | On-board run passes on the full 540×540 frame |
 | T6 | End-to-end upscaled image is identical to the CPU-only pipeline |
 
+## Quickstart (laptop)
+
+```bash
+pip install -r requirements.txt
+make t1                                    # C++ golden == Python integer reference, bit for bit
+make profile                               # per-layer CPU timing on a 540×540 frame
+python3 -m model.data                      # download Set5, Set14, DIV2K into data/
+python3 -m model.train                     # train FP32 ESPCN (~25 min on an M2 GPU)
+python3 -m model.eval_psnr --ckpt model/espcn_fp32.pt   # T0: bicubic vs FP32 vs INT8 PSNR
+```
+
 ## Repository layout
 
 ```text
@@ -84,7 +97,8 @@ results/    per-version reports: routed utilization/timing, HLS log, run log, me
 
 - [x] Design specification, interfaces and test plan ([docs/](docs/README.md))
 - [ ] FP32 ESPCN training and INT8 post-training quantization (T0)
-- [ ] Bit-exact C++ golden model and CPU per-layer profiling (T1)
+- [x] Bit-exact C++ golden model, cross-checked against an independent Python integer reference (T1)
+- [x] CPU per-layer profiling (laptop); VCK5000 host CPU still to do
 - [ ] Roofline analysis on the VCK5000
 - [ ] Local kernel testbench with all T2 cases
 - [ ] V0 baseline on the board
