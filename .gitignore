@@ -19,6 +19,7 @@ venv/
 .ipynb_checkpoints/
 *.pt
 *.pth
+!model/espcn_fp32.pt
 data/
 
 # --- Generated test vectors and local builds ---
@@ -48,3 +49,6 @@ emconfig.json
 xrt.run_summary
 !results/**/*.xclbin
 !results/**/*.log
+
+# --- Local build output ---
+build/
