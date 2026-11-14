@@ -2,7 +2,7 @@
 
 An HLS hardware accelerator for **ESPCN ×2 image super-resolution**, built on the AMD/Xilinx VCK5000 (Versal VC1902) with Vitis HLS 2022.2 and XRT. The FPGA kernel computes the network's dominant 3×3 convolution (64→32 channels, **87 % of all MACs**) in INT8. Its output matches a quantized software reference **bit for bit**, and every speedup is measured on the real board.
 
-> **Status:** specification, bit-exact golden model (T1) and CPU profiling done; model training and kernel versions in progress. See the [roadmap](#roadmap). FPGA performance figures are **design targets** until each version is measured on the board.
+> **Status:** golden model (T1), CPU profiling, mutation-tested kernel harness (T2) and the V0 baseline are done; model training and the first board builds are in progress. See the [roadmap](#roadmap). FPGA performance figures are **design targets** until each version is measured on the board.
 
 ---
 
@@ -65,7 +65,7 @@ Correctness is checked in levels. Each level must pass before a 30-minute bitstr
 |---|---|
 | T0 | INT8 model is within 0.3 dB PSNR of FP32 and beats bicubic (Set5) |
 | T1 | C++ golden model is bit-exact with the Python integer reference |
-| T2 | Kernel C++ is bit-exact with the golden model on 12 targeted cases (impulses, borders, saturation, rounding, odd sizes) in about 1 s on a laptop |
+| T2 | Kernel C++ is bit-exact with the golden model on 15 targeted and random cases (impulses, borders, saturation, rounding, odd sizes, W = 540) in about 2 s on a laptop |
 | T3 | HLS schedule shows the intended II, depth and resources |
 | T4 | Hardware emulation passes |
 | T5 | On-board run passes on the full 540×540 frame |
@@ -75,12 +75,14 @@ Correctness is checked in levels. Each level must pass before a 30-minute bitstr
 
 ```bash
 pip install -r requirements.txt
-make t1                                    # C++ golden == Python integer reference, bit for bit
+make test                                  # T1 + T2 on V0 + harness self-test + mutation test
 make profile                               # per-layer CPU timing on a 540×540 frame
 python3 -m model.data                      # download Set5, Set14, DIV2K into data/
 python3 -m model.train                     # train FP32 ESPCN (~25 min on an M2 GPU)
 python3 -m model.eval_psnr --ckpt model/espcn_fp32.pt   # T0: bicubic vs FP32 vs INT8 PSNR
 ```
+
+The T2 harness is itself tested. A kernel that writes zeros must fail, and `make t2-mutation` injects 11 realistic bugs into V0 (flipped kernel, off-by-one channel slice, swapped output packing, missing padding, 16-bit accumulator, truncating instead of rounding, 32-bit requant product, ...). Every one must be caught.
 
 ## Repository layout
 
@@ -100,8 +102,9 @@ results/    per-version reports: routed utilization/timing, HLS log, run log, me
 - [x] Bit-exact C++ golden model, cross-checked against an independent Python integer reference (T1)
 - [x] CPU per-layer profiling (laptop); VCK5000 host CPU still to do
 - [ ] Roofline analysis on the VCK5000
-- [ ] Local kernel testbench with all T2 cases
-- [ ] V0 baseline on the board
+- [x] Local kernel testbench with all T2 cases, mutation-tested
+- [x] XRT host and per-version Vitis build flow
+- [ ] V0 baseline: T2 passes locally; HLS, hardware emulation and board run pending
 - [ ] V1 → V3 optimizations, each with a predicted vs. measured cycle count
 - [ ] Application-level analysis (fps, Amdahl bound, PSNR)
 
