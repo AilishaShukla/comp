@@ -89,7 +89,7 @@ All files are raw little-endian binaries with **no header**. Sizes are fixed by 
 
 **Pixel shuffle order** (PyTorch `PixelShuffle(2)` semantics): `out[2y+dy][2x+dx] = l3[y][x][dy*2 + dx]`.
 
-**Manifest** (`vectors/manifest.csv`): `case,H,W,seed,dir,purpose`. Each case directory holds the subset of files that case needs. The T2 cases in [02-test-plan.md](02-test-plan.md) §2 use `l1_out.bin` (IFM), `l2_w.bin`, `l2_b.bin`, `qparams.bin` and the golden `l2_out.bin`.
+**Manifest** (`vectors/manifest.csv`): `case,H,W,seed,dir,purpose`. Each case directory holds the subset of files that case needs, plus `shape.txt` (`H W`, text) so `host.exe` can be given just the directory. The T2 cases in [02-test-plan.md](02-test-plan.md) §2 use `l1_out.bin` (IFM), `l2_w.bin`, `l2_b.bin`, `qparams.bin` and the golden `l2_out.bin`.
 
 Because the IFM is 64 int8 values per pixel in HWC order and int8 is little-endian, `l1_out.bin` maps byte-for-byte onto the kernel's 512-bit words (channel c sits at bits 8c+7:8c). The host can `memcpy` it straight into the XRT buffer.
 

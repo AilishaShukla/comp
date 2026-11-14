@@ -91,6 +91,16 @@ Each pointer gets `m_axi` on its bundle, plus `s_axilite` for scalars and return
 | Bias | 32 | int32 | 128 | 2 |
 | OFM (L2 output) | 540×540×32 | HWC, INT8, 2 px/word | 9.3 M | 145,800 |
 
+Bit positions inside a 512-bit word (all little-endian, so each `.bin` file can be `memcpy`'d straight into its buffer):
+
+| Buffer | Element | Bits |
+|---|---|---|
+| IFM word p | channel c of pixel p | `8c+7 : 8c` |
+| weight word co·9 + ky·3 + kx | Cin c | `8c+7 : 8c` |
+| bias word j | bias[16j + i], int32 | `32i+31 : 32i` |
+| OFM word q | channel c of pixel 2q | `8c+7 : 8c` |
+| OFM word q | channel c of pixel 2q+1 | `256+8c+7 : 256+8c` |
+
 HWC with Cin = 64 means **one 512-bit word = one pixel's full input vector**. That is the main reason to choose HWC: no unpacking across words is needed. The Lab 2 rule still applies: write the scalar index first, then divide by elements per word.
 
 ```text

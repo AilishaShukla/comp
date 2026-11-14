@@ -28,12 +28,12 @@ flowchart BT
 
 ## 2. T2 test cases (kernel vs golden, on the Mac)
 
-Each case is a set of generated binary vectors, plus a row in `test/vectors/manifest.csv` with the case name, H, W, seed and purpose.
+All widths are even, as the kernel contract requires ([01-architecture.md](01-architecture.md) §3). Each case is a set of generated binary vectors, plus a row in `test/vectors/manifest.csv` with the case name, H, W, seed and purpose.
 
 | Case | H×W | Inputs | Bug class it catches |
 |---|---|---|---|
-| `impulse_center` | 5×5 | IFM = 0 except one pixel, one channel = 1; real weights | Kernel flipped / ky,kx order wrong (correlation vs convolution) |
-| `impulse_per_channel` | 3×3 | Impulse in each of the 64 Cin in turn | Cin bit-slice index off (`8c+7, 8c`) |
+| `impulse_center` | 5×6 | IFM = 0 except one pixel, one channel = 1; positive weights, scale M = 1 so out = weight | Kernel flipped / ky,kx order wrong (correlation vs convolution) |
+| `impulse_per_channel` | 3×192 | 64 impulses, one per Cin, 3 px apart so their windows don't overlap | Cin bit-slice index off (`8c+7, 8c`) |
 | `weight_onehot` | 4×4 | Random IFM; one nonzero weight per Cout | Cout ↔ weight-word mapping, output packing order |
 | `border_ones` | 4×6 | All ones | Zero padding at corners and edges |
 | `saturate_hi` | 4×4 | Max positive IFM and weights | INT32 accumulator, upper clamp at 127 |
