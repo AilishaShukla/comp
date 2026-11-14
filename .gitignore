@@ -37,6 +37,7 @@ build_dir*/
 .ipcache/
 *.xo
 *.xclbin
+*.xsa
 *.ltx
 *.info
 *.link_summary
