@@ -18,7 +18,7 @@ flowchart BT
 
 | Level | What it proves | Tool | Pass condition | Required before |
 |---|---|---|---|---|
-| T0 | The quantized model is good enough to be worth accelerating | `model/eval_psnr.py` | INT8 within 0.3 dB of FP32, above bicubic, on Set5 | Exporting weights |
+| T0 | The quantized model is good enough to be worth accelerating | `model/eval_psnr.py` | INT8 within 0.5 dB of FP32 and ≥ 1.0 dB above bicubic, on Set5 (D19) | Exporting weights |
 | T1 | The C++ golden model is a faithful reference | `golden/` + Python dump | 0 mismatches on all layer outputs for 3 images | Any kernel work |
 | T2 | Kernel logic and indexing are correct | `test/check_conv.sh` | 0 mismatches on every case in §2 | `make hls` |
 | T3 | Pragmas did what we intended | `make hls`, HLS log | Target loops at expected II; no unexpected partition blow-up; HLS finishes in under ~10 min | Board build |

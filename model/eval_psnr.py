@@ -3,7 +3,8 @@
     python -m model.eval_psnr --ckpt model/espcn_fp32.pt
 
 PSNR is measured on Y in [0, 1] with a 2-pixel border crop (docs/03-metrics.md).
-T0 passes when FP32 beats bicubic and INT8 is within 0.3 dB of FP32 on Set5.
+T0 passes on Set5 when FP32 beats bicubic, INT8 beats bicubic by at least
+1.0 dB, and INT8 is within 0.5 dB of FP32 (D19).
 """
 from __future__ import annotations
 
@@ -20,7 +21,8 @@ from model.quant_ref import QModel, run_int8
 from model.quantize import quantize_input, quantize_model
 
 BORDER = 2
-T0_MAX_DROP_DB = 0.3
+T0_MAX_DROP_DB = 0.5
+T0_MIN_GAIN_OVER_BICUBIC_DB = 1.0
 
 
 def psnr(a: np.ndarray, b: np.ndarray) -> float:
@@ -75,7 +77,9 @@ def main() -> int:
         print(f"{name:<8} {r['bicubic']:8.2f} {r['fp32']:8.2f} {r['int8']:8.2f} {r['fp32'] - r['int8']:6.2f}")
 
     s5 = results["set5"]
-    ok = s5["fp32"] > s5["bicubic"] and s5["fp32"] - s5["int8"] <= T0_MAX_DROP_DB
+    ok = (s5["fp32"] > s5["bicubic"]
+          and s5["int8"] - s5["bicubic"] >= T0_MIN_GAIN_OVER_BICUBIC_DB
+          and s5["fp32"] - s5["int8"] <= T0_MAX_DROP_DB)
     print("T0 PASSED" if ok else "T0 FAILED")
     return 0 if ok else 1
 

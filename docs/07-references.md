@@ -33,6 +33,7 @@ Every claim in the proposal and reports should cite an ID from here. Status: ✅
 | R10 | B. Jacob et al., "Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference," CVPR 2018. [arXiv:1712.05877](https://arxiv.org/abs/1712.05877) | **INT8 weights/activations, INT32 bias, fixed-point requantization**: basis of 06 §2–3 | ✅ |
 | R11 | Google, gemmlowp: low-precision GEMM library (fixed-point multiplier and rounding shift). [github.com/google/gemmlowp](https://github.com/google/gemmlowp) | Reference implementation of `quantize_multiplier` / rounding right shift | ✅ |
 | R12 | Xilinx, Brevitas: PyTorch quantization-aware training library. [github.com/Xilinx/brevitas](https://github.com/Xilinx/brevitas) | Fallback if post-training quantization fails T0 (QAT) | ✅ |
+| R28 | M. Nagel, M. van Baalen, T. Blankevoort, M. Welling, "Data-Free Quantization Through Weight Equalization and Bias Correction," ICCV 2019. [arXiv:1906.04721](https://arxiv.org/abs/1906.04721) | **Cross-layer equalization** used before per-tensor INT8 quantization (06 §2, D18) | ✅ |
 
 ## D. Datasets
 

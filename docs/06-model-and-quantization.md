@@ -18,7 +18,7 @@ Refs: ESPCN [R1], integer-only quantization [R10], gemmlowp fixed-point requanti
 | Starting code | An existing PyTorch ESPCN [O1/O2], changed to ReLU and Y-only | Faster than writing from scratch (risk trigger in 04-plan) |
 | Optimizer | Adam, lr 1e-3 → 1e-4 at 80 %, L1 loss, batch 64, 100k iterations (D12) | `model/train.py` defaults |
 
-**Gate T0:** FP32 Set5 PSNR is above bicubic. Then INT8 PSNR is within 0.3 dB of FP32.
+**Gate T0:** FP32 Set5 PSNR is above bicubic. Then INT8 PSNR beats bicubic by at least 1.0 dB and is within 0.5 dB of FP32 (D19; was 0.3 dB).
 
 ## 2. Quantization scheme
 
@@ -32,7 +32,8 @@ This is post-training, symmetric, per-tensor INT8 quantization, following the in
 | Activation after ReLU (L1, L2 outputs) | int8, range [0, 127] | s_yℓ = calibrated max / 127 | 0 |
 | L3 output (no ReLU) | int8, range [−128, 127] | s_y3 = calibrated max|y| / 127 | 0 |
 
-- **Calibration:** run the FP32 model on about 50 training images. Take the 99.99th-percentile activation per layer, not the absolute max, so outliers don't waste range. Try per-channel weight scales only if T0 fails. That would change the kernel interface: bias + mult/shift per Cout. Log it in 05-decisions first.
+- **Cross-layer equalization (CLE) [R28]:** before calibration, rescale L1→L2 and L2→L3 so each channel pair has the same weight range (20 iterations). ReLU passes positive scales through, so the FP32 output is unchanged and the kernel contract stays per-tensor. Without it, one L2 output channel (|w| up to 1.27 vs a median channel max of 0.26) makes per-tensor INT8 lose 0.93 dB on Set5 (D18).
+- **Calibration:** run the FP32 model on about 50 training images. Take the 99.99th-percentile activation per layer, not the absolute max, so outliers don't waste range. Each image contributes at most 1M values per layer, sampled with a fixed seed, so calibration fits in laptop RAM (D17). Per-channel weight scales were tested after CLE and gained only 0.08 dB, so they are not used. That would change the kernel interface: bias + mult/shift per Cout. Log it in 05-decisions first.
 - Float → int8 weight rounding happens only in `export.py`. Any rounding mode is fine there (`torch.round` rounds half to even). Bit-exactness is unaffected because everything downstream uses the exported integers.
 
 ## 3. Requantization: float scale → integer `mult`, `shift`

@@ -63,7 +63,7 @@ Correctness is checked in levels. Each level must pass before a 30-minute bitstr
 
 | Level | Check |
 |---|---|
-| T0 | INT8 model is within 0.3 dB PSNR of FP32 and beats bicubic (Set5) |
+| T0 | INT8 model is within 0.5 dB PSNR of FP32 and beats bicubic by ≥ 1.0 dB (Set5) |
 | T1 | C++ golden model is bit-exact with the Python integer reference |
 | T2 | Kernel C++ is bit-exact with the golden model on 15 targeted and random cases (impulses, borders, saturation, rounding, odd sizes, W = 540) in about 2 s on a laptop |
 | T3 | HLS schedule shows the intended II, depth and resources |

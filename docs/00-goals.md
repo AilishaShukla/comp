@@ -19,7 +19,7 @@ This project builds and characterizes the **core compute engine** of such an acc
 | G3 | Performance we can explain | Analytical cycle model within ~20 % of on-board time for each version |
 | G4 | Hardware quality | Closes at 200 MHz, WNS ≥ 0; resources reported per version |
 | G5 | Application-level result | End-to-end time per frame and fps, CPU-only vs. CPU + FPGA, compared with the Amdahl bound |
-| G6 | Output images are usable | INT8 pipeline PSNR within ~0.3 dB of FP32 and above bicubic on Set5 |
+| G6 | Output images are usable | INT8 pipeline PSNR within 0.5 dB of FP32 and at least 1.0 dB above bicubic on Set5 (D19) |
 
 ## Stretch goals
 

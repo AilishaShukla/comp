@@ -1,0 +1,4 @@
+dataset   bicubic     FP32     INT8   drop   (PSNR dB, Y channel)
+set5        33.69    35.37    34.89   0.48
+set14       30.34    31.59    31.38   0.21
+T0 PASSED

@@ -141,7 +141,7 @@ After each version, record: on-board time, GOPS, the full resource row, Freq, WN
 | Criterion | How it is measured | Pass condition |
 |---|---|---|
 | Correctness | Kernel output vs. C++ INT8 golden model | Bit-exact (0 mismatches) |
-| Image quality | PSNR/SSIM of the full pipeline vs. FP32 model and bicubic upscaling on Set5/Set14 | INT8 within ~0.3 dB of FP32 and above bicubic |
+| Image quality | PSNR/SSIM of the full pipeline vs. FP32 model and bicubic upscaling on Set5/Set14 | INT8 within 0.5 dB of FP32 and ≥ 1.0 dB above bicubic (D19) |
 | Kernel performance | Host timer around the kernel call; GOPS = 2·MACs / time | Each version beats the previous one; analytical model within ~10–20 % |
 | Application performance | End-to-end time per frame: CPU-only golden model vs. CPU + FPGA | Report speedup and frames/s, and explain the gap from the Amdahl bound |
 | Implementation | Routed util + timing reports | 200 MHz, WNS ≥ 0 |
